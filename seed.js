@@ -1,6 +1,5 @@
-import { getDb } from './db.js';
+import { getDb, DB_PATH } from './db.js';
 
-// Seed next 14 days with 9:00, 11:00, 14:00, 16:00 60‑min slots
 const SLOTS_PER_DAY = ['09:00', '11:00', '14:00', '16:00'];
 
 function iso(date, time) {
@@ -9,13 +8,13 @@ function iso(date, time) {
   d.setHours(h, m, 0, 0);
   return d.toISOString();
 }
-
 function addMinutes(isoStr, minutes) {
   return new Date(new Date(isoStr).getTime() + minutes * 60000).toISOString();
 }
 
 const run = async () => {
   try {
+    console.log('Seeding DB at', DB_PATH);
     const db = await getDb();
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -30,7 +29,8 @@ const run = async () => {
         } catch {}
       }
     }
-    console.log('Seed complete');
+    const count = await db.get('SELECT COUNT(*) as c FROM slots');
+    console.log('Seed complete. slots=', count.c);
   } catch (e) {
     console.error('Seed error:', e);
   } finally {

@@ -3,10 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { nanoid } from 'nanoid';
-import { getDb } from './db.js';
+import { getDb, DB_PATH } from './db.js';
 import { sendMail } from './mailer.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 dotenv.config();
 const app = express();
@@ -31,6 +32,19 @@ function inferredBaseUrl(req) {
   const host = req.headers.host;
   return `${proto}://${host}`;
 }
+
+// Diagnostics
+app.get('/api/diag', async (_req, res) => {
+  const exists = fs.existsSync(DB_PATH);
+  let canOpen = true;
+  try { const db = await getDb(); await db.get('SELECT 1'); } catch { canOpen = false; }
+  res.json({
+    ok: true,
+    dbPath: DB_PATH,
+    dbFileExists: exists,
+    dbOpen: canOpen
+  });
+});
 
 // API: list available slots
 app.get('/api/slots', async (_req, res, next) => {
@@ -75,7 +89,6 @@ app.post('/api/appointments', async (req, res, next) => {
 <p><a href="${custLink}">Confirm appointment</a></p>
 <p>If you did not request this, ignore this email.</p>`
     });
-
     await sendMail({
       to: process.env.PROVIDER_EMAIL,
       subject: `New appointment request ${fmt(slot.start_iso)}`,
@@ -90,7 +103,7 @@ app.post('/api/appointments', async (req, res, next) => {
   }
 });
 
-// Confirmation endpoint (clicked from email)
+// Confirmation endpoint
 app.get('/confirm', async (req, res, next) => {
   try {
     const { token, who } = req.query;
@@ -98,14 +111,10 @@ app.get('/confirm', async (req, res, next) => {
     const db = await getDb();
     const col = who === 'customer' ? 'customer_confirmed' : 'provider_confirmed';
     const tokenCol = who === 'customer' ? 'token_customer' : 'token_provider';
-
     const appt = await db.get(`SELECT a.*, s.start_iso FROM appointments a JOIN slots s ON s.id = a.slot_id WHERE ${tokenCol} = ?`, [token]);
     if (!appt) return res.status(404).send('Token not found');
-
     if (appt[col]) return res.send('Already confirmed.');
-
     await db.run(`UPDATE appointments SET ${col} = 1 WHERE id = ?`, [appt.id]);
-
     const updated = await db.get('SELECT * FROM appointments WHERE id = ?', [appt.id]);
     if (updated.customer_confirmed && updated.provider_confirmed) {
       const result = await db.run('UPDATE slots SET is_booked = 1 WHERE id = ? AND is_booked = 0', [updated.slot_id]);
@@ -122,7 +131,6 @@ app.get('/confirm', async (req, res, next) => {
         });
       }
     }
-
     res.send('Confirmation saved. You can close this page.');
   } catch (err) {
     console.error('GET /confirm error:', err);
@@ -137,6 +145,18 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Server error' });
 });
+
+// Startup DB check
+(async () => {
+  try {
+    console.log('DB_PATH:', DB_PATH);
+    const db = await getDb();
+    const row = await db.get('SELECT COUNT(*) as c FROM slots');
+    console.log('DB open ok. slots=', row?.c ?? 'unknown');
+  } catch (e) {
+    console.error('Startup DB open failed:', e);
+  }
+})();
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server at http://0.0.0.0:${PORT}`);

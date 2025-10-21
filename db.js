@@ -3,7 +3,7 @@ import { open } from 'sqlite';
 import fs from 'fs';
 import path from 'path';
 
-const DB_PATH = process.env.DB_PATH || '/data/data.sqlite';
+export const DB_PATH = process.env.DB_PATH || '/data/data.sqlite';
 
 function ensureDirFor(filePath) {
   const dir = path.dirname(filePath);

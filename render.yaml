@@ -26,7 +26,6 @@ services:
         sync: false
       - key: DB_PATH
         value: /data/data.sqlite
-      # Optional. If omitted the app infers from request headers.
       # - key: BASE_URL
       #   value: https://your-app.onrender.com
     disks:
