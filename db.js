@@ -1,9 +1,17 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import fs from 'fs';
+import path from 'path';
 
-const DB_PATH = process.env.DB_PATH || './data.sqlite';
+const DB_PATH = process.env.DB_PATH || '/data/data.sqlite';
+
+function ensureDirFor(filePath) {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
 
 export async function getDb() {
+  ensureDirFor(DB_PATH);
   const db = await open({ filename: DB_PATH, driver: sqlite3.Database });
   await db.exec(`
     PRAGMA foreign_keys = ON;

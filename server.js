@@ -34,7 +34,7 @@ function inferredBaseUrl(req) {
 }
 
 // API: list available slots
-app.get('/api/slots', async (req, res) => {
+app.get('/api/slots', async (_req, res) => {
   const db = await getDb();
   const rows = await db.all('SELECT id, start_iso, end_iso FROM slots WHERE is_booked = 0 AND datetime(start_iso) > datetime("now") ORDER BY start_iso ASC');
   res.json(rows);

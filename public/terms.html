@@ -40,7 +40,7 @@
     const slotId = params.get('slot');
     const start = params.get('start');
     document.querySelector('input[name="slotId"]').value = slotId;
-    document.getElementById('slot-info').textContent = start ? \`Selected time: \${new Date(start).toLocaleString()}\` : '';
+    document.getElementById('slot-info').textContent = start ? `Selected time: ${new Date(start).toLocaleString()}` : '';
 
     document.getElementById('details-form').addEventListener('submit', async (e) => {
       e.preventDefault();

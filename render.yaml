@@ -1,15 +1,15 @@
 services:
   - type: web
-    name: appointment-app
+    name: test-appointment-website
     runtime: node
     region: frankfurt
     plan: starter
-    buildCommand: "npm install && npm run seed"
-    startCommand: "npm start"
+    buildCommand: "npm install"
+    startCommand: "npm run seed && npm start"
     healthCheckPath: /api/health
     envVars:
       - key: BUSINESS_NAME
-        sync: false
+        value: Test Appointment Website
       - key: BUSINESS_EMAIL
         sync: false
       - key: PROVIDER_EMAIL
@@ -17,7 +17,7 @@ services:
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
-        sync: false
+        value: "587"
       - key: SMTP_SECURE
         value: "false"
       - key: SMTP_USER
