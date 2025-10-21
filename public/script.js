@@ -1,11 +1,20 @@
+// Client-side hardening
 async function fetchSlots() {
   const r = await fetch('/api/slots');
+  if (!r.ok) throw new Error(`GET /api/slots failed: ${r.status}`);
   return r.json();
 }
 
 function renderSlots(slots) {
   const ul = document.getElementById('slot-list');
   ul.innerHTML = '';
+  if (!slots.length) {
+    const li = document.createElement('li');
+    li.className = 'muted';
+    li.textContent = 'No free slots.';
+    ul.appendChild(li);
+    return;
+  }
   for (const s of slots) {
     const li = document.createElement('li');
     li.className = 'slot';
@@ -31,9 +40,13 @@ async function init() {
   btn.addEventListener('click', async () => {
     dropdown.classList.toggle('hidden');
     if (!dropdown.dataset.loaded) {
-      const slots = await fetchSlots();
-      renderSlots(slots);
-      dropdown.dataset.loaded = '1';
+      try {
+        const slots = await fetchSlots();
+        renderSlots(slots);
+        dropdown.dataset.loaded = '1';
+      } catch (e) {
+        document.getElementById('slot-list').innerHTML = `<li class="muted">Failed to load slots. ${String(e)}</li>`;
+      }
     }
   });
 
