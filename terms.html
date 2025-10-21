@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Confirm details</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <a class="btn small" href="index.html">← Back</a>
+    <h2>Confirm your appointment</h2>
+    <p id="slot-info" class="muted"></p>
+
+    <form id="details-form">
+      <label>Full name<input name="name" required /></label>
+      <label>Email<input name="email" type="email" required /></label>
+      <label>Phone (optional)<input name="phone" /></label>
+
+      <div class="terms">
+        <h3>Terms</h3>
+        <ul>
+          <li>Arrive 5 minutes early.</li>
+          <li>24-hour cancellation policy.</li>
+          <li>Your data stays in your browser for this demo.</li>
+        </ul>
+        <label class="checkbox">
+          <input type="checkbox" name="termsAccepted" required /> I accept the terms.
+        </label>
+      </div>
+
+      <input type="hidden" name="slotId" />
+      <button class="btn" type="submit">Submit</button>
+    </form>
+
+    <p id="status" class="muted"></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
