@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: test-appointment-website-localserver
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    healthCheckPath: /api/health
+    envVars:
+      - key: BUSINESS_NAME
+        value: Test Appointment Website
